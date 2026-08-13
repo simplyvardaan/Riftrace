@@ -35,15 +35,16 @@ body {
 
 /* Game title updates */
 .game-title {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Orbitron', sans-serif;
   font-weight: 900;
-  font-size: 4rem;
+  font-size: 4.5rem;
   text-transform: uppercase;
   color: #ffffff;
-  -webkit-text-stroke: 3px #000;
-  letter-spacing: 4px;
+  letter-spacing: 8px;
   margin: 0;
-  text-shadow: 0px 5px 0px rgb(0, 0, 0);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.6), 0 0 20px rgba(0, 229, 255, 0.3);
+  display: inline-block;
+  transform: skewX(-8deg);
 }
 
 /* Main Content Area - Make it position relative to contain absolute children */
@@ -66,7 +67,12 @@ body {
   max-height: 450px; /* Slightly reduced height */
   border-radius: 10px;
   z-index: 10;
-  overflow:visible;
+  overflow: visible;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* Right Panel (Racers) absolute positioning */
@@ -78,9 +84,14 @@ body {
   height: auto;
   max-height: 450px; /* Slightly reduced height */
   border-radius: 10px;
-  overflow: hidden;
+  overflow: visible; /* Changed to visible for tooltips/dropdowns */
   z-index: 10;
   text-align: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* Center Panel stays centered but fixed size instead of flex */
@@ -245,13 +256,11 @@ body {
 }
 
 .code-input {
-  position: fixed;
-  top: 50px;
-  right: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
+  width: 100%;
 }
 
 .code-box {
@@ -275,7 +284,17 @@ body {
 }
 
 #join-code-input {
-  margin-top: 10px;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  flex: 1;
+}
+
+#join-party-btn {
+  margin: 0 !important;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .code-instructions {
@@ -290,20 +309,28 @@ input {
   width: 100%;
   max-width: 250px;
   padding: 12px;
-  border-radius: 5px;
-  background-color: white;
-  border: 2px solid #000000;
-  color: #000000;
-  font-family: 'Poppins', sans-serif;
+  border-radius: 6px;
+  background-color: rgba(20, 20, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   text-align: center;
   margin-bottom: 10px;
-  box-shadow: 0px 5px 0px rgba(0, 0, 0, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+  background-color: rgba(30, 30, 30, 0.8);
 }
 
 input::placeholder {
-  color: rgb(125, 125, 125);
+  color: rgba(255, 255, 255, 0.4);
   font-size: 0.9rem;
 }
 
@@ -422,12 +449,10 @@ input::placeholder {
 }
 
 .status-message {
-  color: #ff0080;
+  color: #00e5ff;
   font-size: 0.9rem;
-  position: fixed;
-  top: 30px;
-  right: 20px;
-  left: calc(100vw - 480px)
+  margin-top: 10px;
+  text-align: center;
 }
 
 /* Car Color Carousel */
@@ -861,8 +886,7 @@ input::placeholder {
     left: 50%;
     transform: translateX(-50%);
     top: 10px;
-    -webkit-text-stroke: 2px #000;
-    text-shadow: 0px 3px 0px rgb(0, 0, 0);
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
   }
   
   .panel-title {
@@ -877,10 +901,6 @@ input::placeholder {
 
   .right-panel {
     width: 280px;
-  }
-
-  .code-input {
-    top: 10px;
   }
   
   #join-code-input {
@@ -990,9 +1010,6 @@ input::placeholder {
 }
 
 @media (max-width: 750px) {
-  .code-input {
-    right: 5px;
-  }
   .right-panel {
     right: 5px;
     width: 180px;
@@ -1012,4 +1029,155 @@ input::placeholder {
     position: fixed;
     top: 120px;
   }
+}
+
+/* LEADERBOARD WIDGET STYLING */
+.leaderboard-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-bottom: 10px;
+}
+
+.leaderboard-title {
+  font-family: 'Orbitron', sans-serif !important;
+  font-size: 1.6rem !important;
+  letter-spacing: 2px;
+  color: #00e5ff !important;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+  margin-bottom: 15px !important;
+}
+
+.leaderboard-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+.leaderboard-tabs .tab-btn {
+  flex: 1;
+  padding: 6px 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #aaa;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.leaderboard-tabs .tab-btn:hover {
+  background: rgba(0, 229, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(0, 229, 255, 0.3);
+}
+
+.leaderboard-tabs .tab-btn.active {
+  background: rgba(0, 229, 255, 0.2);
+  color: #00e5ff;
+  border-color: #00e5ff;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+}
+
+.leaderboard-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 5px;
+  max-height: 250px;
+}
+
+/* Custom Scrollbar for Leaderboard */
+.leaderboard-list-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.leaderboard-list-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.leaderboard-list-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.5);
+  border-radius: 4px;
+}
+
+#leaderboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 4px 4px 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  color: #eee;
+  transition: all 0.2s ease;
+}
+
+.leaderboard-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.leaderboard-item.rank-1 {
+  background: rgba(255, 215, 0, 0.08);
+  border-left-color: #ffd700;
+}
+
+.leaderboard-item.rank-2 {
+  background: rgba(192, 192, 192, 0.08);
+  border-left-color: #c0c0c0;
+}
+
+.leaderboard-item.rank-3 {
+  background: rgba(205, 127, 50, 0.08);
+  border-left-color: #cd7f32;
+}
+
+.leaderboard-rank {
+  font-weight: 900;
+  width: 20px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.rank-1 .leaderboard-rank { color: #ffd700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+.rank-2 .leaderboard-rank { color: #c0c0c0; text-shadow: 0 0 5px rgba(192, 192, 192, 0.5); }
+.rank-3 .leaderboard-rank { color: #cd7f32; text-shadow: 0 0 5px rgba(205, 127, 50, 0.5); }
+
+.leaderboard-name {
+  flex: 1;
+  text-align: left;
+  padding-left: 10px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderboard-time {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  color: #00e5ff;
+  text-shadow: 0 0 5px rgba(0, 229, 255, 0.3);
+}
+
+.no-records {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  padding: 20px 0;
+  font-size: 0.9rem;
 }

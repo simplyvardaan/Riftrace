@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Racez.io</title>
+  <title>Riftrace</title>
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="stylesheet" href="src/lobby-style.css">
   <script type="module" src="/src/lobby-car.js"></script>
   <script type="module" src="/src/lobby.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Exo+2:wght@400;700&family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.min.js"></script>
@@ -48,7 +48,7 @@
 
   <!-- Loading Screen -->
   <div id="loading-screen">
-    <h1 class="loading-title">RACEZ.IO</h1>
+    <h1 class="loading-title">RIFTRACE</h1>
     <div class="loader-container">
       <div class="loader">
         <div class="bar"></div>
@@ -64,7 +64,7 @@
   <div class="game-container">
     <!-- Title Area -->
     <header class="game-header">
-      <h1 class="game-title">RACEZ.IO</h1>
+      <h1 class="game-title">RIFTRACE</h1>
     </header>
     
     <!-- Main Content Area -->
@@ -145,6 +145,20 @@
             </ul>
           </div>
           
+          <!-- Leaderboard Section -->
+          <div id="lobby-leaderboard" class="leaderboard-section">
+            <h2 class="panel-title">TRACK RECORDS</h2>
+            <div class="leaderboard-tabs">
+              <button class="tab-btn active" data-track="map1">Forest Freeway</button>
+              <button class="tab-btn" data-track="map2">Snowy Speedway</button>
+            </div>
+            <div class="leaderboard-list-container">
+              <ol id="leaderboard-list">
+                <!-- Dynamically filled -->
+              </ol>
+            </div>
+          </div>
+          
           <!-- Join Lobby Section -->
           <div class="join-section">
             <div id="code-input">
@@ -174,11 +188,11 @@
   <div id="info-popup" class="info-popup hidden">
     <div class="info-overlay"></div>
     <div class="info-content">
-      <h2>RACEZ.IO - Game Info</h2>
+      <h2>RIFTRACE - Game Info</h2>
       
       <div class="info-section">
         <h3>About the Game</h3>
-        <p>RACEZ.IO is a multiplayer 3D racing game where you can race against friends across unique tracks. Create or join a party to play with others, or practice in a solo game.</p>
+        <p>RIFTRACE is a multiplayer 3D racing game where you can race against friends across unique tracks. Create or join a party to play with others, or practice in a solo game.</p>
       </div>
       
       <div class="info-section">

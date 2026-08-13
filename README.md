@@ -1,12 +1,12 @@
-# Racez.io
+# Riftrace
 
-![Racez.io](frontend/public/favicon.png)
+![Riftrace](frontend/public/favicon.png)
 
 A real-time multiplayer 3D racing game built with JavaScript and modern web technologies. Race with friends through various tracks, compete for the best time, and enjoy physics-based driving mechanics.
 
 ## Play Now
 
-[Play Racez.io Online](https://racez.io)
+[Play Riftrace Online](https://riftrace.io)
 
 ## Features
 
@@ -23,7 +23,7 @@ A real-time multiplayer 3D racing game built with JavaScript and modern web tech
 
 ### Creating a Game
 
-1. Visit the Racez.io website
+1. Visit the Riftrace website
 2. Enter your name
 3. Choose your car color
 4. Click "Create Party"
@@ -33,7 +33,7 @@ A real-time multiplayer 3D racing game built with JavaScript and modern web tech
 
 ### Joining a Game
 
-1. Visit the Racez.io website
+1. Visit the Riftrace website
 2. Enter your name
 3. Choose your car color
 4. Enter the party code provided by the host

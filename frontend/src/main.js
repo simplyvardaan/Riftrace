@@ -680,6 +680,42 @@ function updateSpectatorCamera() {
 }
 
 function showFinalLeaderboard() {
+  // Save my score to the high scores leaderboard in localStorage
+  try {
+    const myPlayerId = localStorage.getItem('myPlayerId') || 'solo-player';
+    const myPlayerInfo = allPlayers.find(p => p.id === myPlayerId);
+    const myName = myPlayerInfo?.name || 'You';
+    const myFinishTime = playerFinishTimes[myPlayerId] || (playerPositions.find(p => p.id === myPlayerId)?.finishTime) || "00:00";
+    
+    if (myFinishTime && myFinishTime !== "00:00" && myFinishTime !== "DNF") {
+      const trackId = (gameConfig && gameConfig.trackId) || 'map1';
+      let leaderboardRecords = {};
+      try {
+        leaderboardRecords = JSON.parse(localStorage.getItem('riftrace_leaderboard')) || {};
+      } catch (e) {
+        console.error("Error reading leaderboard:", e);
+      }
+      
+      if (!leaderboardRecords[trackId]) {
+        leaderboardRecords[trackId] = [];
+      }
+      
+      const timeExists = leaderboardRecords[trackId].some(r => r.name === myName && r.time === myFinishTime);
+      
+      if (!timeExists) {
+        leaderboardRecords[trackId].push({
+          name: myName,
+          time: myFinishTime,
+          timestamp: Date.now()
+        });
+        localStorage.setItem('riftrace_leaderboard', JSON.stringify(leaderboardRecords));
+        console.log("Saved new track record to leaderboard:", myName, myFinishTime, trackId);
+      }
+    }
+  } catch (err) {
+    console.error("Error saving to high scores leaderboard:", err);
+  }
+
   // Hide all existing UI elements
   if (speedometer) speedometer.style.display = 'none';
   if (raceTimer) raceTimer.style.display = 'none';

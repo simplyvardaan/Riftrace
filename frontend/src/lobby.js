@@ -19,6 +19,7 @@ class RacingLobby {
       this.attachEventListeners();
       this.initCarColorCarousel();
       this.initMapSelector(); // Add this line to initialize the map selector
+      this.initLeaderboard(); // Initialize the high-scores leaderboard
       
       // Initialize PeerJS
       this.initPeerJS();
@@ -58,6 +59,10 @@ class RacingLobby {
       // Initially hide just the racers title and player list, not the join section
       this.racersTitle.classList.add('hidden');
       this.playersContainer.classList.add('hidden');
+      
+      // Leaderboard elements
+      this.leaderboardContainer = document.getElementById('lobby-leaderboard');
+      this.leaderboardList = document.getElementById('leaderboard-list');
       
       // Initialize player name with random name
       this.playerNameInput.value = this.playerName;
@@ -244,6 +249,11 @@ class RacingLobby {
         this.racersTitle.classList.remove('hidden');
         this.playersContainer.classList.remove('hidden');
         
+        // Hide leaderboard panel
+        if (this.leaderboardContainer) {
+          this.leaderboardContainer.classList.add('hidden');
+        }
+        
         // Enable the map selector for host
         this.mapSelectorContainer.classList.remove('disabled');
         
@@ -305,6 +315,11 @@ class RacingLobby {
             
             // Hide the join party controls
             this.joinSection.classList.add('hidden');
+            
+            // Hide leaderboard panel
+            if (this.leaderboardContainer) {
+              this.leaderboardContainer.classList.add('hidden');
+            }
             
             // Ensure map selector remains disabled for non-hosts
             this.mapSelectorContainer.classList.add('disabled');
@@ -385,6 +400,12 @@ class RacingLobby {
       this.joinStatus.textContent = 'Host disconnected. Party ended.';
       this.joinCodeInput.value = '';
       
+      // Show leaderboard panel
+      if (this.leaderboardContainer) {
+        this.leaderboardContainer.classList.remove('hidden');
+        this.renderLeaderboard();
+      }
+      
       // Re-enable map selection for single-player mode
       this.mapSelectorContainer.classList.remove('disabled');
       
@@ -429,6 +450,12 @@ class RacingLobby {
       this.joinSection.classList.remove('hidden');
       this.joinStatus.textContent = '';
       this.joinCodeInput.value = '';
+      
+      // Show leaderboard panel
+      if (this.leaderboardContainer) {
+        this.leaderboardContainer.classList.remove('hidden');
+        this.renderLeaderboard();
+      }
       
       // Re-enable map selection for single-player mode
       this.mapSelectorContainer.classList.remove('disabled');
@@ -673,6 +700,12 @@ class RacingLobby {
           this.joinSection.classList.remove('hidden');
           this.joinStatus.textContent = 'You were kicked from the party.';
           this.joinCodeInput.value = '';
+          
+          // Show leaderboard panel
+          if (this.leaderboardContainer) {
+            this.leaderboardContainer.classList.remove('hidden');
+            this.renderLeaderboard();
+          }
           
           // Remove ready button styling
           this.playBtn.textContent = 'PLAY GAME';
@@ -968,6 +1001,12 @@ class RacingLobby {
       this.racersTitle.classList.add('hidden');
       this.playersContainer.classList.add('hidden');
       
+      // Show leaderboard panel
+      if (this.leaderboardContainer) {
+        this.leaderboardContainer.classList.remove('hidden');
+        this.renderLeaderboard();
+      }
+      
       // Disable map selector when no longer host
       this.mapSelectorContainer.classList.add('disabled');
       
@@ -1187,6 +1226,94 @@ class RacingLobby {
             });
           }
         });
+      });
+    }
+
+    initLeaderboard() {
+      if (!this.leaderboardContainer || !this.leaderboardList) return;
+      
+      // Set default leaderboard records in localStorage if not exists (initially empty)
+      const defaultRecords = {
+        map1: [],
+        map2: []
+      };
+      
+      // If we already have the old default data stored, clear it out
+      let currentVal = localStorage.getItem('riftrace_leaderboard');
+      if (currentVal && (currentVal.includes("Apex_Racer") || currentVal.includes("GhostDrive") || currentVal.includes("ShiftKey"))) {
+        localStorage.setItem('riftrace_leaderboard', JSON.stringify(defaultRecords));
+      } else if (!currentVal) {
+        localStorage.setItem('riftrace_leaderboard', JSON.stringify(defaultRecords));
+      }
+      
+      // Initialize active track tab
+      this.leaderboardActiveTrack = 'map1';
+      
+      // Setup tab event listeners
+      const tabs = this.leaderboardContainer.querySelectorAll('.tab-btn');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          this.leaderboardActiveTrack = tab.getAttribute('data-track');
+          this.renderLeaderboard();
+        });
+      });
+      
+      // Initial render
+      this.renderLeaderboard();
+    }
+    
+    renderLeaderboard() {
+      if (!this.leaderboardList) return;
+      
+      this.leaderboardList.innerHTML = '';
+      
+      let records = {};
+      try {
+        records = JSON.parse(localStorage.getItem('riftrace_leaderboard')) || {};
+      } catch (e) {
+        console.error("Error reading leaderboard records:", e);
+      }
+      
+      const trackRecords = records[this.leaderboardActiveTrack] || [];
+      
+      if (trackRecords.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'no-records';
+        li.textContent = 'No track records yet. Be the first!';
+        this.leaderboardList.appendChild(li);
+        return;
+      }
+      
+      // Sort records (ascending by time string)
+      const timeToSeconds = (timeStr) => {
+        const parts = timeStr.split(':');
+        if (parts.length === 2) {
+          const mins = parseInt(parts[0], 10);
+          const secs = parseFloat(parts[1]);
+          return mins * 60 + secs;
+        }
+        return parseFloat(timeStr) || 999999;
+      };
+      
+      const sortedRecords = [...trackRecords].sort((a, b) => timeToSeconds(a.time) - timeToSeconds(b.time));
+      
+      // Limit to top 5 records
+      const topRecords = sortedRecords.slice(0, 5);
+      
+      topRecords.forEach((record, index) => {
+        const rank = index + 1;
+        const li = document.createElement('li');
+        li.className = `leaderboard-item rank-${rank <= 3 ? rank : 'other'}`;
+        
+        li.innerHTML = `
+          <span class="leaderboard-rank">#${rank}</span>
+          <span class="leaderboard-name">${record.name}</span>
+          <span class="leaderboard-time">${record.time}</span>
+        `;
+        
+        this.leaderboardList.appendChild(li);
       });
     }
   }
