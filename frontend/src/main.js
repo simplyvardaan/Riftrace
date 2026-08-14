@@ -906,13 +906,37 @@ function getPlayerColorHex(colorName) {
 window.showFinalLeaderboard = showFinalLeaderboard;
 
 function setupCartoonySkybox(scene) {
+  const trackId = gameConfig?.trackId || 'map1';
+  
   // Create shader materials for gradient skybox
   const skyGeo = new THREE.SphereGeometry(1000, 32, 32);
   
+  let topHex = 0x88ccff;
+  let bottomHex = 0xbbe2ff;
+  let fogColor = 0xbbe2ff;
+  let fogDensity = 0.002;
+  
+  if (trackId === 'map3') { // Cyberpunk Night
+    topHex = 0x020015;
+    bottomHex = 0x1a0033;
+    fogColor = 0x110022;
+    fogDensity = 0.006;
+  } else if (trackId === 'map4') { // Volcano Sunset
+    topHex = 0x100000;
+    bottomHex = 0xff3b00;
+    fogColor = 0x1a0500;
+    fogDensity = 0.007;
+  } else if (trackId === 'map2') { // Snowy Speedway
+    topHex = 0xa3c2e0;
+    bottomHex = 0xd1e0e0;
+    fogColor = 0xd1e0e0;
+    fogDensity = 0.003;
+  }
+  
   // Shader material for gradient
   const uniforms = {
-    topColor: { value: new THREE.Color(0x88ccff) },  
-    bottomColor: { value: new THREE.Color(0xbbe2ff) }, 
+    topColor: { value: new THREE.Color(topHex) },  
+    bottomColor: { value: new THREE.Color(bottomHex) }, 
     offset: { value: 0 },
     exponent: { value: 0.6 }
   };
@@ -944,6 +968,9 @@ function setupCartoonySkybox(scene) {
   
   const sky = new THREE.Mesh(skyGeo, skyMat);
   scene.add(sky);
+  
+  // Set fog on scene
+  scene.fog = new THREE.FogExp2(fogColor, fogDensity);
 }
 
 // Initialize everything
@@ -997,7 +1024,7 @@ function init() {
   
   // Setup renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.outputEncoding = THREE.sRGBEncoding;  // or THREE.LinearSRGBEncoding in newer Three.js
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
@@ -1027,23 +1054,57 @@ function init() {
     tmpTrans = physicsState.tmpTrans;
     
     // Load the track as a single model
-    const mapToLoad = gameConfig?.trackId || 'map1'; // Default to map1 if no config
-    loadTrackModel(ammo, mapToLoad, scene, physicsWorld, loadingManager, (trackModel) => {
-      console.log(`Track model loaded (${mapToLoad}), extracting for minimap`);
+    const trackId = gameConfig?.trackId || 'map1'; // Default to map1 if no config
+    
+    // Map tracks 3 and 4 to use geometries from map1 and map2
+    let modelId = 'map1';
+    if (trackId === 'map1' || trackId === 'map3') {
+      modelId = 'map1';
+    } else if (trackId === 'map2' || trackId === 'map4') {
+      modelId = 'map2';
+    }
+    
+    loadTrackModel(ammo, modelId, scene, physicsWorld, loadingManager, (trackModel) => {
+      console.log(`Track model loaded (${modelId}) for track ${trackId}, extracting for minimap`);
       // Extract track data for minimap when track is loaded
       extractTrackData(trackModel);
+      
+      // Customize material properties dynamically for map3 (Neon Nebula) & map4 (Volcano Valley)
+      if (trackId === 'map3') { // Cyberpunk Night
+        trackModel.traverse(node => {
+          if (node.isMesh && node.material) {
+            node.material = node.material.clone();
+            node.material.roughness = 0.2; // Shiny roads
+            node.material.metalness = 0.85; // Metallic reflections
+            if (node.material.color) {
+              node.material.color.multiplyScalar(0.7).add(new THREE.Color(0x0c001c));
+            }
+          }
+        });
+      } else if (trackId === 'map4') { // Volcano Sunset
+        trackModel.traverse(node => {
+          if (node.isMesh && node.material) {
+            node.material = node.material.clone();
+            node.material.roughness = 0.8; 
+            node.material.metalness = 0.1; 
+            if (node.material.color) {
+              node.material.color.multiplyScalar(0.6).add(new THREE.Color(0x2a0500));
+            }
+          }
+        });
+      }
     });
     
     // Load map decorations
-    loadMapDecorations(mapToLoad, scene, renderer, camera, loadingManager);
+    loadMapDecorations(modelId, scene, renderer, camera, loadingManager);
     
     // Load gates
-    gateData = loadGates(mapToLoad, scene, loadingManager, (loadedGateData) => {
+    gateData = loadGates(modelId, scene, loadingManager, (loadedGateData) => {
       // Store the reference when gates are fully loaded
       gateData = loadedGateData;
       // Make gate data globally available for multiplayer
       window.gateData = gateData;
-      console.log(`Gates loaded for ${mapToLoad}. Total gates: ${gateData.totalGates}`);
+      console.log(`Gates loaded for track ${trackId} (using ${modelId}). Total gates: ${gateData.totalGates}`);
     });
     
     console.log("About to create vehicle physics");
@@ -1412,14 +1473,32 @@ function setupEnhancedLighting() {
     if (child.isLight) scene.remove(child);
   });
   
+  const trackId = gameConfig?.trackId || 'map1';
+  
+  let ambientHex = 0xcccccc;
+  let ambientIntensity = 2.0;
+  let dirHex = 0xffffff;
+  let dirIntensity = 3.5;
+  
+  if (trackId === 'map3') { // Cyberpunk Night
+    ambientHex = 0x00e5ff;
+    ambientIntensity = 1.2;
+    dirHex = 0xff0080;
+    dirIntensity = 2.5;
+  } else if (trackId === 'map4') { // Volcano Sunset
+    ambientHex = 0xff5500;
+    ambientIntensity = 1.5;
+    dirHex = 0xffaa00;
+    dirIntensity = 3.0;
+  }
+  
   // Reduce ambient light intensity for better shadow definition
-  const ambientLight = new THREE.AmbientLight(0xcccccc, 2);
+  const ambientLight = new THREE.AmbientLight(ambientHex, ambientIntensity);
   scene.add(ambientLight);
   
   // Primary directional light (sun)
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
+  const directionalLight = new THREE.DirectionalLight(dirHex, dirIntensity);
   directionalLight.position.set(40, 250, 30);
-  
   
   scene.add(directionalLight);
 }

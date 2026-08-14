@@ -8,7 +8,7 @@ class LobbyBackground {
     this.camera = null;
     this.renderer = null;
     this.controls = null;
-    this.availableMaps = ['map1', 'map2']; // Define all available maps
+    this.availableMaps = ['map1', 'map2', 'map3', 'map4']; // Define all available maps
     this.mapModels = {}; // Store models for each map
     this.currentMap = 'map1'; // Default active map
     this.clock = new THREE.Clock();
@@ -54,6 +54,7 @@ class LobbyBackground {
   init() {
     // Create scene
     this.scene = new THREE.Scene();
+    this.scene.fog = new THREE.FogExp2(0xbbe2ff, 0.002);
     setupCartoonySkybox(this.scene); 
     
     // Create camera
@@ -73,7 +74,7 @@ class LobbyBackground {
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.physicallyCorrectLights = true;
-    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     
@@ -125,8 +126,10 @@ class LobbyBackground {
   preloadAllMaps() {
     console.log('Preloading all map assets...');
     
-    // Create a group for each map to hold its models
-    this.availableMaps.forEach(mapId => {
+    // Only map1 and map2 have physical asset files
+    const modelMaps = ['map1', 'map2'];
+    
+    modelMaps.forEach(mapId => {
       this.mapModels[mapId] = {
         group: new THREE.Group(),
         loaded: false
@@ -224,18 +227,133 @@ class LobbyBackground {
   
   // Switch to a different map - instantly, since all maps are preloaded
   updateMap(mapId) {
-    if (this.currentMap === mapId || !this.mapModels[mapId]) return;
+    if (this.currentMap === mapId) return;
+    
+    // Determine which source model group to show
+    let sourceMapId = mapId;
+    if (mapId === 'map3') sourceMapId = 'map1';
+    if (mapId === 'map4') sourceMapId = 'map2';
+    
+    let prevSourceMapId = this.currentMap;
+    if (prevSourceMapId === 'map3') prevSourceMapId = 'map1';
+    if (prevSourceMapId === 'map4') prevSourceMapId = 'map2';
     
     // Hide current map
-    if (this.mapModels[this.currentMap]) {
-      this.mapModels[this.currentMap].group.visible = false;
+    if (sourceMapId !== prevSourceMapId && this.mapModels[prevSourceMapId]) {
+      this.mapModels[prevSourceMapId].group.visible = false;
     }
     
     // Show selected map
-    this.mapModels[mapId].group.visible = true;
-    this.currentMap = mapId;
+    if (this.mapModels[sourceMapId]) {
+      this.mapModels[sourceMapId].group.visible = true;
+    }
     
-    console.log(`Switched to ${mapId}`);
+    // Update skybox gradient, lighting, and fog depending on theme
+    this.updateLobbyTheme(mapId);
+    
+    this.currentMap = mapId;
+    console.log(`Switched to ${mapId} (using assets from ${sourceMapId})`);
+  }
+  
+  updateLobbyTheme(mapId) {
+    // Find the sky dome in scene
+    let skyMesh = null;
+    this.scene.traverse(child => {
+      if (child.isMesh && child.geometry && child.geometry.type === 'SphereGeometry' && child.material.uniforms) {
+        skyMesh = child;
+      }
+    });
+    
+    let topHex = 0x88ccff;
+    let bottomHex = 0xbbe2ff;
+    let fogColor = 0xbbe2ff;
+    let fogDensity = 0.002;
+    
+    let ambientHex = 0xffffff;
+    let ambientInt = 1.5;
+    let sunHex = 0xffffff;
+    let sunInt = 3.5;
+    
+    if (mapId === 'map3') { // Cyberpunk Night
+      topHex = 0x020015;
+      bottomHex = 0x1a0033;
+      fogColor = 0x110022;
+      fogDensity = 0.006;
+      ambientHex = 0x00e5ff;
+      ambientInt = 1.2;
+      sunHex = 0xff0080;
+      sunInt = 2.5;
+    } else if (mapId === 'map4') { // Volcano Sunset
+      topHex = 0x100000;
+      bottomHex = 0xff3b00;
+      fogColor = 0x1a0500;
+      fogDensity = 0.007;
+      ambientHex = 0xff5500;
+      ambientInt = 1.5;
+      sunHex = 0xffaa00;
+      sunInt = 3.0;
+    } else if (mapId === 'map2') { // Snowy Speedway
+      topHex = 0xa3c2e0;
+      bottomHex = 0xd1e0e0;
+      fogColor = 0xd1e0e0;
+      fogDensity = 0.003;
+    }
+    
+    // Update sky uniforms
+    if (skyMesh) {
+      skyMesh.material.uniforms.topColor.value.setHex(topHex);
+      skyMesh.material.uniforms.bottomColor.value.setHex(bottomHex);
+    }
+    
+    // Update Fog
+    this.scene.fog = new THREE.FogExp2(fogColor, fogDensity);
+    
+    // Update lights
+    const lightsToRemove = [];
+    this.scene.traverse(child => {
+      if (child.isLight) lightsToRemove.push(child);
+    });
+    lightsToRemove.forEach(light => this.scene.remove(light));
+    
+    // Re-create them with new colors
+    const ambientLight = new THREE.AmbientLight(ambientHex, ambientInt);
+    this.scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(sunHex, sunInt);
+    directionalLight.position.set(50, 100, 50);
+    this.scene.add(directionalLight);
+    
+    // Customize material properties of model meshes in the lobby for map3/map4
+    let sourceMapId = mapId === 'map3' ? 'map1' : (mapId === 'map4' ? 'map2' : mapId);
+    let activeGroup = this.mapModels[sourceMapId]?.group;
+    if (activeGroup) {
+      if (mapId === 'map3') {
+        activeGroup.traverse(node => {
+          if (node.isMesh && node.material) {
+            node.material = node.material.clone();
+            node.material.roughness = 0.2;
+            node.material.metalness = 0.85;
+          }
+        });
+      } else if (mapId === 'map4') {
+        activeGroup.traverse(node => {
+          if (node.isMesh && node.material) {
+            node.material = node.material.clone();
+            node.material.roughness = 0.8;
+            node.material.metalness = 0.1;
+          }
+        });
+      } else {
+        // Reset defaults
+        activeGroup.traverse(node => {
+          if (node.isMesh && node.material) {
+            node.material = node.material.clone();
+            node.material.roughness = 0.7;
+            node.material.metalness = 0.2;
+          }
+        });
+      }
+    }
   }
   
   onWindowResize() {

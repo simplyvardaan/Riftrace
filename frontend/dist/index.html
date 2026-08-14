@@ -3,24 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Web Racing - Lobby</title>
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+  <title>Riftrace</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Exo+2:wght@400;700&family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.min.js"></script>
+  <script src="https://kit.fontawesome.com/1ab8f48e0a.js" crossorigin="anonymous"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/main-CgEkHu1l.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/GLTFLoader-DfiLd5rB.js">
-  <link rel="stylesheet" crossorigin href="/assets/main-by-veH0M.css">
+  <link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/main-BUzgQ66D.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/GLTFLoader-CmC4pxnB.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-BZWelDVU.css">
 </head>
 <body>
+  <div id="rotate-message">
+    <div class="rotate-content">
+      <i class="fas fa-sync-alt rotate-icon"></i>
+      <p>Please Rotate to Landscape</p>
+    </div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <h1 class="loading-title">RIFTRACE</h1>
+    <div class="loader-container">
+      <div class="loader">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+      <div class="loading-text">Loading...</div>
+    </div>
+  </div>
+
   <div class="game-container">
     <!-- Title Area -->
     <header class="game-header">
-      <h1 class="game-title">WEB RACING</h1>
+      <h1 class="game-title">RIFTRACE</h1>
     </header>
     
     <!-- Main Content Area -->
@@ -36,13 +59,29 @@
               <div class="code-display">
                 <div class="code-box">
                   <span id="party-code" class="code">XXXXXX</span>
-                  <button id="copy-code-btn" class="icon-btn">COPY</button>
+                  <button id="copy-code-btn" class="icon-btn">Copy</button>
                 </div>
                 <p class="code-instructions">Share this code with friends</p>
+                <button id="host-stop-btn" class="icon-btn stop-btn">Stop Hosting</button>
               </div>
               
               <!-- Host's Stop Hosting Button -->
-              <button id="host-stop-btn" class="icon-btn stop-btn">STOP HOSTING</button>
+              
+            </div>
+          </div>
+          
+          <div class="map-selector-container">
+            <div class="map-dropdown">
+              <button class="dropdown-button">
+                <span class="dropdown-arrow">▼</span>
+                <span class="selected-map-name">Forest Freeway</span>
+              </button>
+              <div class="dropdown-content">
+                <div class="dropdown-option selected" data-map-id="map1">Forest Freeway</div>
+                <div class="dropdown-option" data-map-id="map2">Snowy Speedway</div>
+                <div class="dropdown-option" data-map-id="map3">Neon Nebula</div>
+                <div class="dropdown-option" data-map-id="map4">Volcano Valley</div>
+              </div>
             </div>
           </div>
         </div>
@@ -87,12 +126,28 @@
             </ul>
           </div>
           
+          <!-- Leaderboard Section -->
+          <div id="lobby-leaderboard" class="leaderboard-section">
+            <h2 class="panel-title">TRACK RECORDS</h2>
+            <div class="leaderboard-tabs">
+              <button class="tab-btn active" data-track="map1">Forest Freeway</button>
+              <button class="tab-btn" data-track="map2">Snowy Speedway</button>
+              <button class="tab-btn" data-track="map3">Neon Nebula</button>
+              <button class="tab-btn" data-track="map4">Volcano Valley</button>
+            </div>
+            <div class="leaderboard-list-container">
+              <ol id="leaderboard-list">
+                <!-- Dynamically filled -->
+              </ol>
+            </div>
+          </div>
+          
           <!-- Join Lobby Section -->
           <div class="join-section">
             <div id="code-input">
               <div class="code-input">
                 <input type="text" id="join-code-input" placeholder="Enter party code" maxlength="6">
-                <button id="join-party-btn" class="icon-btn join-btn">JOIN</button>
+                <button id="join-party-btn" class="icon-btn join-btn">Join</button>
               </div>
               <p id="join-status" class="status-message"></p>
             </div>
@@ -103,6 +158,40 @@
   </div>
 
   <!-- Personal website link button -->
-  <a href="https://aadikulshrestha.ca" target="_blank" class="website-link-btn" aria-label="Visit Aadi Kulshrestha's website"></a>
+  <a href="https://github.com/simplyvardaan" target="_blank" class="website-link-btn" aria-label="Visit Vardaan Saxena's website">
+    <i class="fas fa-external-link-alt"></i>
+  </a>
+
+  <!-- Info button -->
+  <button class="info-btn" id="info-btn" aria-label="Game information">
+    <i class="fas fa-info"></i>
+  </button>
+
+  <!-- Info popup -->
+  <div id="info-popup" class="info-popup hidden">
+    <div class="info-overlay"></div>
+    <div class="info-content">
+      <h2>RIFTRACE - Game Info</h2>
+      
+      <div class="info-section">
+        <h3>About the Game</h3>
+        <p>RIFTRACE is a multiplayer 3D racing game where you can race against friends across unique tracks. Create or join a party to play with others, or practice in a solo game.</p>
+      </div>
+      
+      <div class="info-section">
+        <h3>Controls</h3>
+        <ul>
+          <li><strong>W</strong> - Accelerate</li>
+          <li><strong>S</strong> - Brake/Reverse</li>
+          <li><strong>A</strong> - Steer Left</li>
+          <li><strong>D</strong> - Steer Right</li>
+          <li><strong>R</strong> - Reset Car (if stuck)</li>
+        </ul>
+      </div>
+      
+      <button id="close-info-btn" class="icon-btn">Close</button>
+    </div>
+  </div>
+
 </body>
 </html>
